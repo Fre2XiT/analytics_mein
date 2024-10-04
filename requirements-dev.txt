@@ -1,0 +1,15 @@
+# To ensure app dependencies are ported from your virtual environment/host machine into your container, run 'pip freeze > requirements.txt' in the terminal to overwrite this file
+fastapi[all]
+uvicorn[standard]
+gunicorn
+
+pydantic
+starlette
+pandas
+
+matplotlib
+openpyxl
+
+aiohttp
+prometheus-client
+prometheus_fastapi_instrumentator

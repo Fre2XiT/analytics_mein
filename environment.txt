@@ -1,0 +1,2 @@
+GQL_PROXY_=http://apollo:3000/api/gql/
+GQL_PROXY=http://localhost:33001/api/gql/
