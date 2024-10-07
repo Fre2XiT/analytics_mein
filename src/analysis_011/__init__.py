@@ -76,7 +76,7 @@ async def resolve_df_pivot(variables, cookies):
     # print(pivotdata)
     df = pd.DataFrame(pivotdata)
 
-    pdf = pd.pivot_table(df, values="presenceID", index="userID", columns=["eventID"], aggfunc="count")
+    pdf = pd.pivot_table(df, values="presenceID", index="userFullname", columns=["eventName"], aggfunc="count")
 
     return pdf
 
@@ -94,6 +94,7 @@ from ..utils import process_df_as_html_page
 import json
 import re
 import io
+import datetime
 
 def createRouter(prefix):
     mainpath = "/userpresence"
@@ -104,14 +105,18 @@ def createRouter(prefix):
     @router.get(f"{mainpath}/table", tags=tags, summary="HTML tabulka s daty pro výpočet kontingenční tabulky")
     async def user_classes_html(
         request: Request,
-        where: str = Query(description=WhereDescription)
+        where: str = Query(description=WhereDescription),
+        startdate: datetime.datetime = Query(description=""),
+        enddate: datetime.datetime = Query(description="")
     ):
         "HTML tabulka s daty pro výpočet kontingenční tabulky"
         wherevalue = None if where is None else re.sub(r'{([^:"]*):', r'{"\1":', where) 
         wherejson = json.loads(wherevalue)
         data = await resolve_flat_json(
             variables={
-                "where": wherejson
+                "where": wherejson,
+                "startdate": f"{startdate}",
+                "enddate": f"{enddate}"
             },
             cookies=request.cookies
         )
@@ -121,14 +126,18 @@ def createRouter(prefix):
     @router.get(f"{mainpath}/pivot", tags=tags, summary="HTML kontingenční tabulka")
     async def user_classes_html(
         request: Request,
-        where: str = Query(description=WhereDescription)
+        where: str = Query(description=WhereDescription),
+        startdate: datetime.datetime = Query(description=""),
+        enddate: datetime.datetime = Query(description="")
     ):
         "pivot table"
         wherevalue = None if where is None else re.sub(r'{([^:"]*):', r'{"\1":', where) 
         wherejson = json.loads(wherevalue)
         data = await resolve_df_pivot(
             variables={
-                "where": wherejson
+                "where": wherejson,
+                "startdate": f"{startdate}",
+                "enddate": f"{enddate}"
             },
             cookies=request.cookies
         )
@@ -138,7 +147,9 @@ def createRouter(prefix):
     @router.get(f"{mainpath}/flatjson", tags=tags, summary="Data ve formátu JSON transformována do podoby vstupu pro kontingenční tabulku")
     async def user_classification_flat_json(
         request: Request, 
-        where: str = Query(description=WhereDescription), 
+        where: str = Query(description=WhereDescription),
+        startdate: datetime.datetime = Query(description=""),
+        enddate: datetime.datetime = Query(description="") 
     ):
         "Data ve formátu JSON transformována do podoby vstupu pro kontingenční tabulku"
         print(where, flush=True)
@@ -147,7 +158,9 @@ def createRouter(prefix):
         wherejson = json.loads(wherevalue)
         pd = await resolve_flat_json(
             variables={
-                "where": wherejson
+                "where": wherejson,
+                "startdate": f"{startdate}",
+                "enddate": f"{enddate}"
             },
             cookies=request.cookies
         )
@@ -156,14 +169,18 @@ def createRouter(prefix):
     @router.get(f"{mainpath}/json", tags=tags, summary="Data ve formátu JSON (stromová struktura) nevhodná pro kontingenční tabulku")
     async def user_classification_json(
         request: Request, 
-        where: str = Query(description=WhereDescription), 
+        where: str = Query(description=WhereDescription),
+        startdate: datetime.datetime = Query(description=""),
+        enddate: datetime.datetime = Query(description="") 
     ):
         "Data ve formátu JSON (stromová struktura) nevhodná pro kontingenční tabulku"
         wherevalue = None if where is None else re.sub(r'{([^:"]*):', r'{"\1":', where) 
         wherejson = json.loads(wherevalue)
         pd = await resolve_json(
             variables={
-                "where": wherejson
+                "where": wherejson,
+                "startdate": f"{startdate}",
+                "enddate": f"{enddate}"
             },
             cookies=request.cookies
         )
@@ -172,14 +189,18 @@ def createRouter(prefix):
     @router.get(f"{mainpath}/xlsx", tags=tags, summary="Xlsx soubor doplněný o data v záložce 'data' (podle xlsx vzoru)")
     async def user_classification_xlsx(
         request: Request, 
-        where: str = Query(description=WhereDescription), 
+        where: str = Query(description=WhereDescription),
+        startdate: datetime.datetime = Query(description=""),
+        enddate: datetime.datetime = Query(description="") 
     ):
         "Xlsx soubor doplněný o data v záložce 'data' (podle xlsx vzoru)"
         wherevalue = None if where is None else re.sub(r'{([^:"]*):', r'{"\1":', where) 
         wherejson = json.loads(wherevalue)
         flat_json = await resolve_flat_json(
             variables={
-                "where": wherejson
+                "where": wherejson,
+                "startdate": f"{startdate}",
+                "enddate": f"{enddate}"
             },
             cookies=request.cookies
         )
